@@ -13,8 +13,8 @@ public class Game {
     int nbPlayers;
     int Turn;
     int Round;
-    boolean resolved=false;
-    boolean noMorePlayers=false;
+    boolean resolved;
+    boolean noMorePlayers;
     
     ArrayList<Card> Cards=new ArrayList<Card>();
     ArrayList<Card> Crime=new ArrayList<Card>();
@@ -66,9 +66,6 @@ public class Game {
     public void Solo() {
         Players = new ArrayList<Player>();
     
-        resolved=false;
-        noMorePlayers=false;
-
         Cards=new ArrayList<Card>();
         Crime=new ArrayList<Card>();
         Suspects=new ArrayList<Card>();
@@ -76,13 +73,18 @@ public class Game {
         Rooms=new ArrayList<Card>();
         Deck=new ArrayList<Card>();
         
+        resolved=false;
+        noMorePlayers=false;
+        
         Players.add(new Player(0));
         Players.add(new Player(1));
+        Players.add(new Player(2));
         
         Players.get(0).name="Player "+0;
         Players.get(1).name="Player "+1;
+        Players.get(2).name="Player "+2;
         
-        nbPlayers = 2;
+        nbPlayers = 3;
         Turn=0;
         Round=1;       
         
@@ -222,6 +224,7 @@ public class Game {
         System.out.println("Choix Disponibles :"+Cards+"\n");
         System.out.println("player 0"+Players.get(0).Hand);
         System.out.println("Player 1 "+Players.get(1).Hand);
+        System.out.println("Player 2 "+Players.get(2).Hand);
         System.out.println("Crime : "+Crime.get(0).name+Crime.get(1).name+Crime.get(2).name);
         
         Scanner sc = new Scanner(System.in);
@@ -279,25 +282,35 @@ public class Game {
         Card Weapon=new Card();
         Card Suspect=new Card();
         
+        for (int i=2;i<=4;i++){
+            for(Card card : Cards) {
+                if(card.name.equals(Ordre.get(i))&&card.type.equals("Suspect")) Suspect=card;
+                if(card.name.equals(Ordre.get(i))&&card.type.equals("Rooms")) Room=card;
+                if(card.name.equals(Ordre.get(i))&&card.type.equals("Weapons")) Weapon=card;
+            }
+        }
+        
+        System.out.println("I suggest it was "+Suspect.name+", in the "+Room.name+", with the "+Weapon.name+".\n");
+            
         while(!end) {
             for (int i=2;i<=4;i++){
                 for(Card carte : Players.get(NumTestedPlayer).Hand){
-                    if(carte.name.equals(Ordre.get(i))) Info.add(carte);
-                    PlayersPossess = Players.get(NumTestedPlayer);
-                }
-                for(Card card : Cards) {
-                    if(card.name.equals(Ordre.get(i))&&card.type.equals("Suspect")) Suspect=card;
-                    if(card.name.equals(Ordre.get(i))&&card.type.equals("Rooms")) Room=card;
-                    if(card.name.equals(Ordre.get(i))&&card.type.equals("Weapons")) Weapon=card;
+                    if(carte.name.equals(Ordre.get(i))) {
+                        Info.add(carte);
+                        PlayersPossess = Players.get(NumTestedPlayer);
+                        end = true;
+                    }
                 }
             }
-      
-            if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
-            else  NumTestedPlayer = NumTestedPlayer+1;
-            if(NumTestedPlayer == Turn) end = true;
+            
+            if(Info.size()<1) {
+                System.out.println("\t"+Players.get(NumTestedPlayer).name+" : \"I cannot disprove your suggestion.\"\n");
+                if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
+                else  NumTestedPlayer = NumTestedPlayer+1;
+                if(NumTestedPlayer == Turn) end = true;
+            }
         }
         
-        System.out.println("I suggest it was "+Suspect.name+", in the "+Room.name+", with the "+Weapon.name+".");
         
         boolean knownClue;
         
@@ -315,16 +328,15 @@ public class Game {
                 Players.get(Turn).Clues.add(carte);
             }
         }
-        else System.out.println("\nI cannot disprove your suggestion.");
     }
     
     public Card chooseCard(Player p, ArrayList<Card> Info){        
         boolean validAnswer=false;
         
-        System.out.println(p.name+", Which card do you want to show ?");
+        System.out.println("\t"+p.name+", Which card do you want to show ?");
         int i = 0;
         for(Card carte : Info) {
-            System.out.println(i+") "+carte);
+            System.out.println("\t"+i+") "+carte);
             i++;
         }
         
@@ -339,11 +351,11 @@ public class Game {
                    validAnswer=true;
             
             if(!validAnswer){
-                System.out.println("\nUnknown choice.");
-                System.out.println(p.name+", Which card do you want to show ?");
+                System.out.println("\n\tUnknown choice.");
+                System.out.println("\t"+p.name+", Which card do you want to show ?");
                 i = 0;
                 for(Card carte : Info) {
-                    System.out.println(i+") "+carte);
+                    System.out.println("\t"+i+") "+carte);
                     i++;
                 }
             }
