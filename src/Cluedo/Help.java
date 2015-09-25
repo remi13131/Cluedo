@@ -3,10 +3,12 @@ package Cluedo;
 public class Help {
     
     public void messageAccueil(){
-        System.out.println("CLUEDO 0.1\n\n"+
-                           "Réalisé par : \n\tJaouad\n\tAlla Gharbi\n\tLamia\n\tRémi Dipaola\n\n"+
-                           "BIENVENUE DANS LE JEU CLUEDO !\n\n"+ 
-                           "Type \"help\" for some information.");
+        System.out.println("CLUEDO 0.1\n\n" +
+                           "Réalisé par : \n\tJaouad Ouled Moussa\tAla Gharbi\tLamia Elhani\tRémi Dipaola\n" +
+                           "\tLicense 3 Informatique - Faculté Jean Perrin de Lens - Université d'Artois\n\n" +
+                           "#####################################\n"+
+                           "# BIENVENUE DANS LE JEU DE CLUEDO ! #\n"+
+                           "#####################################\n\n");
         
     }
     
@@ -24,7 +26,7 @@ public class Help {
                            "exit\n"+
                            "\tExit program.\n\n"+
                            "help\n"+
-                           "\tShow this message.");
+                           "\tShow this message.\n");
     }
     
     public void help_menu_game(){

@@ -13,7 +13,7 @@ public class Card {
 
     @Override
     public String toString() {
-        return "Card "+ type +" "+ name ;
+        return "Card "+ type +" "+ name;
     }
     
     
