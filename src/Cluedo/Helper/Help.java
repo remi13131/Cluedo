@@ -1,18 +1,22 @@
-package Cluedo;
+package Cluedo.Helper;
 
 public class Help {
     
-    public void messageAccueil(){
+    public static void messageAccueil(){
         System.out.println("CLUEDO 0.1\n\n" +
                            "Réalisé par : \n\tJaouad Ouled Moussa\tAla Gharbi\tLamia Elhani\tRémi Dipaola\n" +
-                           "\tLicense 3 Informatique - Faculté Jean Perrin de Lens - Université d'Artois\n\n" +
-                           "#####################################\n"+
-                           "# BIENVENUE DANS LE JEU DE CLUEDO ! #\n"+
-                           "#####################################\n\n");
+                           "\tLicense 3 Informatique - Faculté Jean Perrin de Lens - Université d'Artois");
         
     }
     
-    public void help(){
+    public static void welcome(){
+        System.out.println("\n\n################################\n"+
+                           "# WELCOME TO THE CLUEDO GAME ! #\n"+
+                           "################################\n\n");
+        
+    }
+    
+    public static void help(){
 	System.out.println("\nsolo\n"+
                            "\tStart a quick solo match (Human + Computer).\n\n"+
                            "referee\n"+
@@ -29,7 +33,7 @@ public class Help {
                            "\tShow this message.\n");
     }
     
-    public void help_menu_game(){
+    public static void help_menu_game(){
 	System.out.println("\nCommands available during a match:\n\n"+
                            "\t* show\n\t\tShow information about the state of the match.\n\n"+
                            "\t* move <type > <card1 > <card2 > <card3 >\n"+
@@ -40,8 +44,8 @@ public class Help {
 	
     }
     
-    public void quit(){
-        System.out.println("Merci d'avoir Joué ! Au revoir !");
+    public static void quit(){
+        System.out.println("Thanks for playing! Goodbye and see you soon!");
         System.exit(0);
     }
 }

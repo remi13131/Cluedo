@@ -1,81 +1,37 @@
-package Cluedo;
+package Cluedo.TheGame;
+
+import Cluedo.Helper.*;
+import Cluedo.Modele.*;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class Game {
-
-    // DEFINITION DES VARIABLES GLOBALES
-    
-    Help Help = new Help(); //Instanciation de la classe d'aide
-    
-    ArrayList<Player> Players = new ArrayList<Player>();
-    
+public class Solo {
+  
     int nbPlayers;
     int Turn;
     int Round;
     boolean resolved;
     boolean noMorePlayers;
     
-    ArrayList<Card> Cards=new ArrayList<Card>();
-    ArrayList<Card> Crime=new ArrayList<Card>();
-    ArrayList<Card> Suspects=new ArrayList<Card>();
-    ArrayList<Card> Weapons=new ArrayList<Card>();
-    ArrayList<Card> Rooms=new ArrayList<Card>();
-    ArrayList<Card> Deck=new ArrayList<Card>();
-
-    public void Start(){
-        //Affichage du message de bienvenue
-        Help.messageAccueil();
-        String choix="";
-        
-        //Boucle du menu Principal
-        while(!choix.toLowerCase().equals("exit")){
-            choix = this.menuPrincipal();
-            switch(choix.toLowerCase()){
-                case "solo": 
-                    this.Solo(); //On lance une partie Solo
-                break;
-                
-                case "referee": 
-                    System.out.println("\nNot implemented yet.\n");
-                break;
-                    
-                case "register": 
-                    System.out.println("\nNot implemented yet.\n");
-                break;
-                     
-                case "help": 
-                    Help.help(); //affichage de l'aide
-                break;
-                                       
-                case "exit" : 
-                    Help.quit(); 
-                break;
-                
-                default: System.out.println("\nChoix non valide.\n"); break;
-            }  
-        }
-    }
+    ArrayList<Card> Cards, Suspects, Weapons, Rooms, Deck;
+    ArrayList<Player> Players = new ArrayList<>();
     
-    public String menuPrincipal(){
-        //Permet à l'utilisateur d'entrer son choix dans l'invite de commande
-        System.out.println("Type \"help\" for some information.");
-        Scanner sc = new Scanner(System.in);
-        System.out.println(" > ");
-        String str = sc.nextLine();
-        return str;
-    }
+    Crime Crime;
     
-    public void Solo() {
+    public void Start() {
         //Lancement d'une partie Solo
+        this.newGame();
         
-        //Initialisation des variables
+        System.out.println("\nPress Enter to go back to Principal Menu.\n");
+        this.waitEnter();
+    }
+    
+    public void newGame() {
+        //Initialisation des variables du jeu
         Players = new ArrayList<Player>();
     
         Cards=new ArrayList<Card>();
-        Crime=new ArrayList<Card>();
+        Crime=new Crime();
         Suspects=new ArrayList<Card>();
         Weapons=new ArrayList<Card>();
         Rooms=new ArrayList<Card>();
@@ -95,15 +51,28 @@ public class Game {
         
         this.Distribuer(); //Donner des cartes à tous les joueurs
         
-        //Tant que le mystère n'est pas résolu, ou qu'il y a encore des joueurs pouvant donner des accusations, on passe au tour suivant
+        this.playGame();
+    }
+    
+    public void playGame() {
+         //Tant que le mystère n'est pas résolu, ou qu'il y a encore des joueurs pouvant donner des accusations, on passe au tour suivant
         while(!resolved && !noMorePlayers){
             this.nextTurn();
         }
         
-        if(resolved) System.out.println("BRAVO ! Vous avez résolu l'égnime !");
-        if(noMorePlayers) System.out.println("No one could solve the Crime. \nThe Crime was made by "+Crime.get(0).name+", in the "+Crime.get(2).name+", with the "+Crime.get(1).name+". More Luck next time !");
+        //Fin de la partie, affichage du texte de résolution / non résolution de l'égnigme, retour au menu proincipal
+        if(resolved) System.out.println("\n##################################\n"
+                                      + "# BRAVO ! You solved the crime ! #\n"
+                                      + "##################################");
+        if(noMorePlayers) System.out.println("No one could solve the Crime. \nThe Crime was made by "+Crime.getSuspect().getName()+", in the "+Crime.getRoom().getName()+", with the "+Crime.getWeapon().getName()+".\n"
+                                           + "Play again, maybe you will get more Luck next time ! :)\n");
         
-        System.out.println("\nRetour au menu Principal.\n");
+        System.out.println("You have played "+Round+" Rounds.");
+    }
+    
+    public void waitEnter(){
+        Scanner sc = new Scanner(System.in);
+        String str = sc.nextLine();
     }
     
     public void Joueurs(){
@@ -136,9 +105,9 @@ public class Game {
         Cards.add(new Card("Study", "Rooms")); 
         
         for(Card card : Cards){
-            if(card.type.equals("Rooms")) Rooms.add(card);
-            if(card.type.equals("Weapons")) Weapons.add(card);
-            if(card.type.equals("Suspect")) Suspects.add(card);
+            if(card.getType().equals("Rooms")) Rooms.add(card);
+            if(card.getType().equals("Weapons")) Weapons.add(card);
+            if(card.getType().equals("Suspect")) Suspects.add(card);
         }
     }
 
@@ -149,11 +118,11 @@ public class Game {
     }
 
     public void Crime(){
-        Crime.add(Suspects.get(0));
+        Crime.setSuspect(Suspects.get(0));
         Suspects.remove(0);
-        Crime.add(Weapons.get(0));
+        Crime.setWeapon(Weapons.get(0));
         Weapons.remove(0);
-        Crime.add(Rooms.get(0));
+        Crime.setRoom(Rooms.get(0));
         Rooms.remove(0);
 
         Deck.addAll(Suspects);
@@ -170,7 +139,7 @@ public class Game {
         int j=0;
         while (i<Deck.size()){
             for(j=0;j<Players.size();j++){
-                Players.get(j).Hand.add(Deck.get(i));
+                Players.get(j).getHand().add(Deck.get(i));
                 i+=1;
             }
         }
@@ -184,14 +153,14 @@ public class Game {
         boolean nextPlayer = true;
         
         //On vérifie que le joueur courant peut encore donner des accusations
-        if(!Players.get(Turn).Game_over){
+        if(!Players.get(Turn).isGame_over()){
             //On attend l'entrée du joueur courant par TraiterCommande qui s'assure de son formattage correct
             Ordre = this.TraiterCommande();
             //Traitement du premier argument de la commande entrée par le joueur courant
             switch (Ordre.get(0).toLowerCase()){
                 case "move" : 
                     //Traitement du deuxième argument de la commande entrée par le joueur courant
-                    switch(Ordre.get(1)){
+                    switch(Ordre.get(1).toLowerCase()){
                         case "suggest" :
                             Suggest(Ordre);
                         break;
@@ -222,27 +191,29 @@ public class Game {
                 default: break;
             }
 
-        } else System.out.println(Players.get(Turn).name+" is out of the game. Turn skipped.");
+        } else System.out.println(Players.get(Turn).getName()+" is out of the game. Turn skipped.");
         
         //Tour terminé, on passe la variable Turn au numéro du prochain Joueur
         if(nextPlayer){
             if(Turn==nbPlayers-1)Turn=0;
             else Turn++;
+            Round++;
         }
     }
         
     public ArrayList<String> TraiterCommande(){
         ArrayList<String> Ordre=new ArrayList<String>();
         
-        /*System.out.println("Choix Disponibles :\n"+Cards+"\n");
+        /* ICI EN COMMENTAIRES DES AFFICHAGES UTILES POUR LES TESTS.
+        System.out.println("Choix Disponibles :\n"+Cards+"\n");
         System.out.println("player 0"+Players.get(0).Hand);
         System.out.println("Player 1 "+Players.get(1).Hand);
         System.out.println("Player 2 "+Players.get(2).Hand);
-        System.out.println("Crime : "+Crime.get(0).name+" "+Crime.get(1).name+" "+Crime.get(2).name);*/
+        System.out.println("Crime : "+Crime.getSuspect().getName()+" "+Crime.getRoom().getName()+" "+Crime.getWeapon().getName());*/
         
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("\n"+Players.get(Turn).name+" >");
+        System.out.println("\n"+Players.get(Turn).getName()+" >");
 
         //On attend l'entrée du joueur
         String str = sc.nextLine();
@@ -258,8 +229,8 @@ public class Game {
             if((Ordre.size()!=5) || 
                (!Ordre.get(0).toLowerCase().equals("move")) || 
                (!Ordre.get(1).toLowerCase().equals("suggest")&&!Ordre.get(1).toLowerCase().equals("accuse"))) {
+                System.out.println("Bad command provided.\n");
                 Help.help_menu_game();
-                System.out.println("Erreur commande");
                 return TraiterCommande();
             }
 
@@ -269,15 +240,16 @@ public class Game {
             //On compte le nombre de cartes Room, Weapon et Suspect dans la commande
             for(int i=2;i<=4;i++){
                 for(Card card : Cards) {
-                    if(card.name.equals(Ordre.get(i))&&card.type.equals("Rooms")) roomCards++;
-                    if(card.name.equals(Ordre.get(i))&&card.type.equals("Suspect")) suspectCards++;
-                    if(card.name.equals(Ordre.get(i))&&card.type.equals("Weapons")) weaponCards++;
+                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) roomCards++;
+                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) suspectCards++;
+                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) weaponCards++;
                 }
             }
             
             //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
             if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
-                System.out.println("Choix non correct. Veuillez choir un Lieu, un Suspect et une Arme disponibles.");
+                System.out.println("Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
+                System.out.println("Available Cards:\n"+Cards+"\n");
                 return TraiterCommande();
             }
         }
@@ -291,7 +263,7 @@ public class Game {
         Player PlayersPossess=new Player();
         
         boolean end = false;
-        int NumTestedPlayer=Players.get(Turn).nbr;
+        int NumTestedPlayer=Players.get(Turn).getNbr();
         
         if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
         else  NumTestedPlayer = NumTestedPlayer+1;
@@ -302,19 +274,17 @@ public class Game {
         
         for (int i=2;i<=4;i++){
             for(Card card : Cards) {
-                if(card.name.equals(Ordre.get(i))&&card.type.equals("Suspect")) Suspect=card;
-                if(card.name.equals(Ordre.get(i))&&card.type.equals("Rooms")) Room=card;
-                if(card.name.equals(Ordre.get(i))&&card.type.equals("Weapons")) Weapon=card;
+                if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) Suspect=card;
+                if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) Room=card;
+                if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) Weapon=card;
             }
         }
-        
-        System.out.println("I suggest it was "+Suspect.name+", in the "+Room.name+", with the "+Weapon.name+".\n");
         
         //Tant que le joueur suivant n'a pas une des cartes demandées, ou que tous les jouerus ont été interrogés, interroger le joueur suivant
         while(!end) {
             for (int i=2;i<=4;i++){
-                for(Card carte : Players.get(NumTestedPlayer).Hand){
-                    if(carte.name.equals(Ordre.get(i))) {
+                for(Card carte : Players.get(NumTestedPlayer).getHand()){
+                    if(carte.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())) {
                         //Une des cartes demandées étaient dans la main d'un joueur
                         Info.add(carte);
                         PlayersPossess = Players.get(NumTestedPlayer);
@@ -323,9 +293,11 @@ public class Game {
                 }
             }
             
+            System.out.println("\n"+Players.get(Turn).getName()+" to "+Players.get(NumTestedPlayer).getName()+": \"I suggest it was "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".\"\n");
+            
             if(Info.size()<1) {
                 //Le joueur interrogé n'avait aucune des cartes demandées
-                System.out.println("\t"+Players.get(NumTestedPlayer).name+" : \"I cannot disprove your suggestion.\"\n");
+                System.out.println("\t"+Players.get(NumTestedPlayer).getName()+": \"I cannot disprove your suggestion.\"\n");
                 if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
                 else  NumTestedPlayer = NumTestedPlayer+1;
                 if(NumTestedPlayer == Turn) end = true;
@@ -341,24 +313,25 @@ public class Game {
             
             knownClue=false;
             //On regarde si le joueur qui suggère possédait déjà cet indice, sinon on l'ajoute à la liste des indices de ce joueur
-            for(Card clue : Players.get(Turn).Clues)
-                if(clue.name.equals(carte.name)){
-                    System.out.println(PlayersPossess.name+" show you  "+carte+". You already knew this Clue.");
+            for(Card clue : Players.get(Turn).getClues())
+                if(clue.getName().equals(carte.getName())){
+                    System.out.println("\n"+PlayersPossess.getName()+" show you  "+carte+". You already knew this Clue.");
                     knownClue=true;
                 }
 
             if(!knownClue){
-                System.out.println(PlayersPossess.name+" show you  "+carte+". You Keep it in your Clues.");
-                Players.get(Turn).Clues.add(carte);
+                System.out.println("\n"+PlayersPossess.getName()+" show you  "+carte+". You Keep it in your Clues.\n");
+                Players.get(Turn).getClues().add(carte);
             }
-        }
+        } else System.out.println("\nNone of the players was able to show you one of the Cards you suggested.\n");       
+        
     }
     
     public Card chooseCard(Player p, ArrayList<Card> Info){  
         //Fonction pour demander à un joueur p quelle quelle carte contenue dans Info veut-il montrer.
         boolean validAnswer=false;
         
-        System.out.println("\t"+p.name+", Which card do you want to show ?");
+        System.out.println("\t"+p.getName()+", Which card do you want to show ?");
         int i = 0;
         for(Card carte : Info) {
             System.out.println("\t"+i+") "+carte);
@@ -369,15 +342,15 @@ public class Game {
         Scanner sc;
         while(!validAnswer){
             sc = new Scanner(System.in);
-            System.out.println("\t"+p.name+" > ");
+            System.out.println("\t"+p.getName()+" > ");
             str = sc.nextLine();
-            if(isValidInt(str)) 
+            if(Utils.isValidInt(str)) 
                if(Integer.parseInt(str)>=0 && Integer.parseInt(str)<Info.size())
                    validAnswer=true;
             
             if(!validAnswer){
                 System.out.println("\n\tUnknown choice.");
-                System.out.println("\t"+p.name+", Which card do you want to show ?");
+                System.out.println("\t"+p.getName()+", Which card do you want to show ?");
                 i = 0;
                 for(Card carte : Info) {
                     System.out.println("\t"+i+") "+carte);
@@ -389,13 +362,6 @@ public class Game {
         return Info.get(Integer.parseInt(str));
     }
     
-    private boolean isValidInt(String toTest) {
-        Pattern p = Pattern.compile("(\\d)+");
-        Matcher m = p.matcher(toTest);
-        if (m.lookingAt() && m.start() == 0 && m.end() == (toTest.length())) return true;
-        return false;
-    }
-    
     public void Accuse(ArrayList<String> Ordre){
         int nbCorrect=0;
         Card Room=new Card();
@@ -404,31 +370,32 @@ public class Game {
         for (int i=2;i<=4;i++){
             //On récupère les cartes sur lesquelles portent l'accusation
             for(Card card : Cards) {
-                if(card.name.equals(Ordre.get(i))&&card.type.equals("Suspect")) Suspect=card;
-                if(card.name.equals(Ordre.get(i))&&card.type.equals("Rooms")) Room=card;
-                if(card.name.equals(Ordre.get(i))&&card.type.equals("Weapons")) Weapon=card;
+                if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) Suspect=card;
+                if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) Room=card;
+                if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) Weapon=card;
             }
             //On teste pour savoir combien de cartes sur lesquelles portent l'accusation font partie du Crime 
-            for(Card carte : Crime)
-                if(carte.name.equals(Ordre.get(i))) nbCorrect++;
+            if(Ordre.get(i).toLowerCase().equals(Crime.getSuspect().getName().toLowerCase())) nbCorrect++;
+            if(Ordre.get(i).toLowerCase().equals(Crime.getRoom().getName().toLowerCase())) nbCorrect++;
+            if(Ordre.get(i).toLowerCase().equals(Crime.getWeapon().getName().toLowerCase())) nbCorrect++;
         }
         
-        System.out.println("\nI accuse "+Suspect.name+", in the "+Room.name+", with the "+Weapon.name+".");
+        System.out.println("\n"+Players.get(Turn).getName()+": \"I accuse "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".\"\n");
         
         //Si il y a exactement trois cartes correspondantes, le Crime est résolu !
         if(nbCorrect == 3){
-            System.out.println("The crime was made by "+Suspect.name+", in the "+Room.name+", with the "+Weapon.name+".");
-            System.out.println(Players.get(Turn).name+" solved the mystery !!");
+            System.out.println("The crime was made by "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".");
+            System.out.println(Players.get(Turn).getName()+" solved the mystery !!");
             resolved = true;
         }
-        //Sinon, le joueur portant l'accusation est éliminé
+        ////Sinon, le joueur portant l'accusation regarde quelle était l'égnigme, et est éliminé
         else {
+            System.out.println("The crime was made by "+Crime.getSuspect().getName()+", in the "+Crime.getRoom().getName()+", with the "+Crime.getWeapon().getName()+". \n");
             System.out.println("Too bad, you are wrong! Your game is over but you still have to show clues to other players!");
-            Players.get(Turn).Game_over = true;
+            Players.get(Turn).setGame_over(true);
             noMorePlayers=true;
-            for(Player player : Players) if(player.Game_over==false) noMorePlayers=false;
+            for(Player player : Players) if(!player.isGame_over()) noMorePlayers=false;
         }
                 
     }
-
 }
