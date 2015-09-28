@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="Cluedo">
+  <ClassDiagramComponents>
+    <Class name="Cluedo" package="Cluedo" visibility="public" xPosition="20.0" yPosition="20.0">
+      <Fields/>
+      <Constructors/>
+      <Methods>
+        <Method name="main" returnType="void" visibility="public" isStatic="true">
+          <Argument type="String[]" name="args"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Help" package="Cluedo.Helper" visibility="public" xPosition="20.0" yPosition="143.0">
+      <Fields/>
+      <Constructors/>
+      <Methods>
+        <Method name="messageAccueil" returnType="void" visibility="public" isStatic="true"/>
+        <Method name="welcome" returnType="void" visibility="public" isStatic="true"/>
+        <Method name="help" returnType="void" visibility="public" isStatic="true"/>
+        <Method name="help_menu_game" returnType="void" visibility="public" isStatic="true"/>
+        <Method name="quit" returnType="void" visibility="public" isStatic="true"/>
+      </Methods>
+    </Class>
+    <Class name="Utils" package="Cluedo.Helper" visibility="public" xPosition="20.0" yPosition="343.0">
+      <Fields/>
+      <Constructors/>
+      <Methods>
+        <Method name="saisieUtilisateur" returnType="String" visibility="public" isStatic="true"/>
+      </Methods>
+    </Class>
+    <Class name="Card" package="Cluedo.Modele" visibility="public" xPosition="293.0" yPosition="469.0">
+      <Fields>
+        <Field name="name" type="String" visibility="package"/>
+        <Field name="type" type="String" visibility="package"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="String" name="name"/>
+          <Argument type="String" name="type"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getName" returnType="String" visibility="public"/>
+        <Method name="setName" returnType="void" visibility="public">
+          <Argument type="String" name="name"/>
+        </Method>
+        <Method name="getType" returnType="String" visibility="public"/>
+        <Method name="setType" returnType="void" visibility="public">
+          <Argument type="String" name="type"/>
+        </Method>
+        <Method name="toString" returnType="String" visibility="public"/>
+      </Methods>
+    </Class>
+    <Class name="Crime" package="Cluedo.Modele" visibility="public" xPosition="293.0" yPosition="13.0">
+      <Fields>
+        <Field name="Suspect" type="Card" visibility="package"/>
+        <Field name="Room" type="Card" visibility="package"/>
+        <Field name="Weapon" type="Card" visibility="package"/>
+        <Field name="resolved" type="boolean" visibility="package"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods>
+        <Method name="getSuspect" returnType="Card" visibility="public"/>
+        <Method name="setSuspect" returnType="void" visibility="public">
+          <Argument type="Card" name="Suspect"/>
+        </Method>
+        <Method name="getRoom" returnType="Card" visibility="public"/>
+        <Method name="setRoom" returnType="void" visibility="public">
+          <Argument type="Card" name="Room"/>
+        </Method>
+        <Method name="getWeapon" returnType="Card" visibility="public"/>
+        <Method name="setWeapon" returnType="void" visibility="public">
+          <Argument type="Card" name="Weapon"/>
+        </Method>
+        <Method name="isResolved" returnType="boolean" visibility="public"/>
+        <Method name="setResolved" returnType="void" visibility="public">
+          <Argument type="boolean" name="resolved"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Player" package="Cluedo.Modele" visibility="public" xPosition="687.0" yPosition="624.0">
+      <Fields>
+        <Field name="nbr" type="int" visibility="package"/>
+        <Field name="name" type="String" visibility="package"/>
+        <Field name="Hand" type="ArrayList&lt;Card&gt;" visibility="package"/>
+        <Field name="Clues" type="ArrayList&lt;Card&gt;" visibility="package"/>
+        <Field name="Game_over" type="boolean" visibility="package"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+        <Constructor visibility="public">
+          <Argument type="int" name="nbr"/>
+          <Argument type="String" name="name"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="show" returnType="void" visibility="public"/>
+        <Method name="getNbr" returnType="int" visibility="public"/>
+        <Method name="setNbr" returnType="void" visibility="public">
+          <Argument type="int" name="nbr"/>
+        </Method>
+        <Method name="getName" returnType="String" visibility="public"/>
+        <Method name="setName" returnType="void" visibility="public">
+          <Argument type="String" name="name"/>
+        </Method>
+        <Method name="getHand" returnType="ArrayList&lt;Card&gt;" visibility="public"/>
+        <Method name="setHand" returnType="void" visibility="public">
+          <Argument type="ArrayList&lt;Card&gt;" name="Hand"/>
+        </Method>
+        <Method name="getClues" returnType="ArrayList&lt;Card&gt;" visibility="public"/>
+        <Method name="setClues" returnType="void" visibility="public">
+          <Argument type="ArrayList&lt;Card&gt;" name="Clues"/>
+        </Method>
+        <Method name="isGame_over" returnType="boolean" visibility="public"/>
+        <Method name="setGame_over" returnType="void" visibility="public">
+          <Argument type="boolean" name="Game_over"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Game" package="Cluedo.TheGame" visibility="public" xPosition="20.0" yPosition="469.0">
+      <Fields/>
+      <Constructors/>
+      <Methods>
+        <Method name="launchGame" returnType="void" visibility="public"/>
+        <Method name="isValidInt" returnType="boolean" visibility="public">
+          <Argument type="String" name="toTest"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Solo" package="Cluedo.TheGame" visibility="public" xPosition="667.0" yPosition="13.0">
+      <Fields>
+        <Field name="nbPlayers" type="int" visibility="package"/>
+        <Field name="Turn" type="int" visibility="package"/>
+        <Field name="Round" type="int" visibility="package"/>
+        <Field name="resolved" type="boolean" visibility="package"/>
+        <Field name="noMorePlayers" type="boolean" visibility="package"/>
+        <Field name="Cards" type="ArrayList&lt;Card&gt;" visibility="package"/>
+        <Field name="Players" type="ArrayList&lt;Player&gt;" visibility="package"/>
+        <Field name="Crime" type="Crime" visibility="package"/>
+      </Fields>
+      <Constructors/>
+      <Methods>
+        <Method name="Start" returnType="void" visibility="public"/>
+        <Method name="newGame" returnType="void" visibility="public"/>
+        <Method name="playGame" returnType="void" visibility="public"/>
+        <Method name="waitEnter" returnType="void" visibility="public"/>
+        <Method name="Joueurs" returnType="void" visibility="public"/>
+        <Method name="Carte" returnType="void" visibility="public"/>
+        <Method name="Shuffle" returnType="void" visibility="public"/>
+        <Method name="Crime" returnType="void" visibility="public"/>
+        <Method name="Distribuer" returnType="void" visibility="public"/>
+        <Method name="nextTurn" returnType="void" visibility="public"/>
+        <Method name="TraiterCommande" returnType="ArrayList&lt;String&gt;" visibility="public"/>
+        <Method name="Suggest" returnType="void" visibility="public">
+          <Argument type="ArrayList&lt;String&gt;" name="Ordre"/>
+        </Method>
+        <Method name="chooseCard" returnType="Card" visibility="public">
+          <Argument type="Player" name="p"/>
+          <Argument type="ArrayList&lt;Card&gt;" name="Info"/>
+        </Method>
+        <Method name="Accuse" returnType="void" visibility="public">
+          <Argument type="ArrayList&lt;String&gt;" name="Ordre"/>
+        </Method>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations>
+    <HasRelation name="Cards" source="Cluedo.TheGame.Solo" target="Cluedo.Modele.Card" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="ArrayList&lt;Card&gt;"/>
+    <HasRelation name="Hand" source="Cluedo.Modele.Player" target="Cluedo.Modele.Card" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="ArrayList&lt;Card&gt;"/>
+    <HasRelation name="Crime" source="Cluedo.TheGame.Solo" target="Cluedo.Modele.Crime" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="Cluedo.Modele.Player" target="Cluedo.Modele.Card" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="Players" source="Cluedo.TheGame.Solo" target="Cluedo.Modele.Player" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="ArrayList&lt;Player&gt;"/>
+    <HasRelation name="Weapon" source="Cluedo.Modele.Crime" target="Cluedo.Modele.Card" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="Cluedo.TheGame.Solo" target="Cluedo.Modele.Player" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="Room" source="Cluedo.Modele.Crime" target="Cluedo.Modele.Card" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="Suspect" source="Cluedo.Modele.Crime" target="Cluedo.Modele.Card" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="Clues" source="Cluedo.Modele.Player" target="Cluedo.Modele.Card" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="ArrayList&lt;Card&gt;"/>
+    <UseRelation source="Cluedo.Modele.Crime" target="Cluedo.Modele.Card" sourceCardinality="1..1" targetCardinality="1..1"/>
+  </ClassDiagramRelations>
+</ClassDiagram>
