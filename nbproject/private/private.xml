@@ -3,13 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Networking/ComServer.java</file>
+            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Modele/Player.java</file>
+            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/TheGame/Referee.java</file>
             <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Networking/Client.java</file>
+            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Cluedo.java</file>
             <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/TheGame/Game.java</file>
-            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Networking/TestClient.java</file>
-            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Networking/TestServer.java</file>
             <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Networking/RegServer.java</file>
-            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/TheGame/Solo.java</file>
+            <file>file:/D:/OneDrive/fac/CLUEDO/Cluedo/src/Cluedo/Networking/TestClient.java</file>
         </group>
     </open-files>
 </project-private>

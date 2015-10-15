@@ -10,66 +10,66 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Referee {
-  
+    int portNumber, numClients, timeout;
     RegServer server;
     
-    int nbPlayers;
-    int Turn;
-    int Round;
-    boolean resolved;
-    boolean noMorePlayers;
+    int nbPlayers = 0, Turn, Round;
+    boolean resolved, noMorePlayers;
     
     ArrayList<Card> Cards, Suspects, Weapons, Rooms, Deck;
     ArrayList<Player> Players;
     
     Crime Crime;
     
-    public void Start(int portNumber, int numClients, int timeout) {
-        System.out.println("Starting server.");
-	try {
-                server = new RegServer(portNumber, numClients, timeout);
-                System.out.println("Waiting for connections...");
-                server.open();
-                for (int i = 0; i < server.getNumClients(); ++i) {
-                        server.send(i, "begin");
-                }
-                String msg;
-                
-                server.close();
-            } catch (IOException e) {
-                    e.printStackTrace();
-            }
-	
+    public void Start(int portNumber, int numClients, int timeout) throws IOException {
+        this.portNumber = portNumber;
+        this.numClients = numClients;
+        this.timeout = timeout;
+        
+        this.waitPlayersConnection();
+        
         //Lancement d'une partie Solo
         this.newGame();
+        
+        server.close();
         
         System.out.println("\nPress Enter to go back to Principal Menu.\n");
         this.waitEnter();
     }
     
-    public void newGame() {
+    public void waitPlayersConnection() throws IOException{
+        System.out.println("Starting server.");
+        
+        server = new RegServer(portNumber, numClients, timeout);
+        System.out.println("Waiting for connections...");
+        server.open();
+
+        server.sendAll("You are now connected with the Game Server.");
+    }
+    
+    public void newGame() throws IOException {
         //Initialisation des variables du jeu        
         resolved=false;
         noMorePlayers=false;
-        
-        nbPlayers = 2;
+
+        System.out.println(server.getNumClients());
+        nbPlayers = server.getNumClients();
+
         Turn=0;
         Round=1;
-        
+
         this.Joueurs(); //Définition du nombre de joueurs
         this.Carte(); //Ajout des Cartes dans le jeu 
         this.Shuffle(); //Mélange des Listes de Carte Rooms, Player, Weapons
         this.Crime(); //Definit un nouveau Crime aléatoire avec une carte Room, une cart Suspect, une carte Weapon, supprime du jeu ces cartes
-        
+
         this.Distribuer(); //Mélnger le jeu et Donner des cartes à tous les joueurs
-        
+
         this.playGame(); //Lancer la partie
     }
     
-    public void playGame() {
-        System.out.println("\nReclusive millionaire Samuel Black’s been murdered in his mansion! \n"
-                 + "Now, it’s up to you to crack the case!\n"
-                 + "Question everything to unravel the mystery. Who did it? Where? And with what weapon?\n");
+    public void playGame() throws IOException {
+        server.sendAll("\nReclusive millionaire Samuel Black’s been murdered in his mansion! \nNow, it’s up to you to crack the case!\nQuestion everything to unravel the mystery. Who did it? Where? And with what weapon?\n");
         
          //Tant que le mystère n'est pas résolu, ou qu'il y a encore des joueurs pouvant donner des accusations, on passe au tour suivant
         while(!resolved && !noMorePlayers){
@@ -170,25 +170,14 @@ public class Referee {
         System.out.println("\nCards have been dealed.\n");
     }	
 
-    public void nextTurn(){
+    public void nextTurn() throws IOException {
         System.out.println("\n");
 
         ArrayList<String> Ordre;
         boolean nextPlayer = true;
-        
-        
-            try {
-                for (int i = 0; i < server.getNumClients(); ++i) {
-                    server.send(i, "next message");
-                }
-
-
-            } 
-            catch (IOException ex) {
-                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-            }
- 
-                
+    
+        server.sendAll("next message");
+   
         //On vérifie que le joueur courant peut encore donner des accusations
         if(!Players.get(Turn).isGame_over()){
             //On attend l'entrée du joueur courant par TraiterCommande qui s'assure de son formattage correct
@@ -238,82 +227,69 @@ public class Referee {
         }
     }
         
-    public ArrayList<String> TraiterCommande(){
+    public ArrayList<String> TraiterCommande() throws IOException {
+        
         ArrayList<String> Ordre=new ArrayList<String>();
         String msg;
+        
         /* ICI EN COMMENTAIRES DES AFFICHAGES UTILES POUR LES TESTS.
         System.out.println("Choix Disponibles :\n"+Cards+"\n");
         System.out.println("player 0"+Players.get(0).Hand);
         System.out.println("Player 1 "+Players.get(1).Hand);
         System.out.println("Player 2 "+Players.get(2).Hand);
         System.out.println("Crime : "+Crime.getSuspect().getName()+" "+Crime.getRoom().getName()+" "+Crime.getWeapon().getName());*/
-
-        try {
-                for (int i = 0; i < server.getNumClients(); ++i) {
-                    if(Players.get(Turn).getNbr()==i){
-                        server.send(i, "\n"+Players.get(Turn).getName()+", it is your turn to play."); 
-                        server.send(i, Players.get(Turn).getName()+" >");  
-                    }
-                    else{
-                        server.send(i, "\n" + Players.get(Turn).getName() + " is choosing the cards to ask.");   
-                    }
-                }
-
-
-            } 
-            catch (IOException ex) {
-                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-            }
- 
-
-        try {
-            //On attend l'entrée du joueur
-            msg  = server.receive(Players.get(Turn).getNbr());
-
-
-            System.out.format("Client %1$d: %2$s\n", Players.get(Turn).getNbr(), msg);
-
-            //On Split pour tester chaque argument et on stocke dans Ordre
-            String[] commande=msg.split(" ");
-            for(int i=0;i<commande.length;i++) Ordre.add(commande[i]);
-
-            //Vérification que la commande entrée contient des mots autorisés
-            if(Ordre.get(0).toLowerCase().equals("exit")||Ordre.get(0).toLowerCase().equals("help")||Ordre.get(0).toLowerCase().equals("show"))
-                return Ordre;
-            else{
-                //La commande doit posséder 5 arguments si autre que "exit", "help" ou "show"
-                if((Ordre.size()!=5) || 
-                   (!Ordre.get(0).toLowerCase().equals("move")) || 
-                   (!Ordre.get(1).toLowerCase().equals("suggest")&&!Ordre.get(1).toLowerCase().equals("accuse"))) {
-                    System.out.println("Bad command provided.\n");
-                    Help.help_menu_game();
-                    return TraiterCommande();
-                }
-
-                int roomCards=0;
-                int suspectCards=0;
-                int weaponCards=0;
-                //On compte le nombre de cartes Room, Weapon et Suspect dans la commande
-                for(int i=2;i<=4;i++){
-                    for(Card card : Cards) {
-                        if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) roomCards++;
-                        if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) suspectCards++;
-                        if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) weaponCards++;
-                    }
-                }
-
-                //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
-                if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
-                    System.out.println("Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
-                    System.out.println("Available Cards:\n"+Cards+"\n");
-                    return TraiterCommande();
-                }
-            }
         
-        } catch (IOException ex) {
-            Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+        for (int i = 0; i < server.getNumClients(); ++i) {
+            if(Players.get(Turn).getNbr()==i){
+                server.send(i, "\n"+Players.get(Turn).getName()+", it is your turn to play."); 
+                server.send(i, Players.get(Turn).getName()+" >");  
+            }
+            else{
+                server.send(i, "\n" + Players.get(Turn).getName() + " is choosing the cards to ask.");   
+            }
         }
         
+        //On attend l'entrée du joueur
+        msg  = server.receive(Turn);
+
+        System.out.format("Client %1$d: %2$s\n", Players.get(Turn).getNbr(), msg);
+
+        //On Split pour tester chaque argument et on stocke dans Ordre
+        String[] commande=msg.split(" ");
+        for(int i=0;i<commande.length;i++) Ordre.add(commande[i]);
+
+        //Vérification que la commande entrée contient des mots autorisés
+        if(Ordre.get(0).toLowerCase().equals("exit")||Ordre.get(0).toLowerCase().equals("help")||Ordre.get(0).toLowerCase().equals("show"))
+            return Ordre;
+        else{
+            //La commande doit posséder 5 arguments si autre que "exit", "help" ou "show"
+            if((Ordre.size()!=5) || 
+               (!Ordre.get(0).toLowerCase().equals("move")) || 
+               (!Ordre.get(1).toLowerCase().equals("suggest")&&!Ordre.get(1).toLowerCase().equals("accuse"))) {
+                System.out.println("Bad command provided.\n");
+                Help.help_menu_game();
+                return TraiterCommande();
+            }
+
+            int roomCards=0;
+            int suspectCards=0;
+            int weaponCards=0;
+            //On compte le nombre de cartes Room, Weapon et Suspect dans la commande
+            for(int i=2;i<=4;i++){
+                for(Card card : Cards) {
+                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) roomCards++;
+                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) suspectCards++;
+                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) weaponCards++;
+                }
+            }
+
+            //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
+            if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
+                System.out.println("Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
+                System.out.println("Available Cards:\n"+Cards+"\n");
+                return TraiterCommande();
+            }
+        }
         return Ordre;
     }
 

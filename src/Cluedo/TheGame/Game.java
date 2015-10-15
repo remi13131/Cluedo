@@ -2,12 +2,13 @@ package Cluedo.TheGame;
 
 import Cluedo.Helper.*;
 import Cluedo.Modele.*;
+import java.io.IOException;
 
 public class Game {
 
     // DEFINITION DES VARIABLES GLOBALES
     
-    public void launchGame(){
+    public void launchGame() throws IOException{
         //Affichage du message de bienvenue
         Help.messageAccueil();
         Help.welcome();
@@ -23,7 +24,7 @@ public class Game {
                 break;
                 
                 case "referee": 
-                    new Referee().Start(12345, 4, 30000);
+                    new Referee().Start(12345, 4, 10000);
                 break;
                     
                 case "register": 

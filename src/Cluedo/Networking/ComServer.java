@@ -50,7 +50,13 @@ public class ComServer {
      * @throws IOException if an I/O error occurs.
      */
     public String recieve() throws IOException {
-    	return this.in.readLine();
+        String line = null;
+        String msg="";
+        do {
+            line = in.readLine();
+            msg += line;
+        } while (line != null);
+    	return msg;
     }
     
     /**

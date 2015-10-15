@@ -53,7 +53,7 @@ public class Client {
 	 * @param msg A String containing the message.
 	 */
 	public void send(String msg) {
-		this.out.println(msg);
+            this.out.format(msg);
 	}
 	
 	/**
@@ -62,6 +62,7 @@ public class Client {
 	 * @throws IOException if an I/O error occurs.
 	 */
 	public void close() throws IOException {
+                this.out.flush();
 		this.out.close();
 		this.in.close();
 		this.socket.close();

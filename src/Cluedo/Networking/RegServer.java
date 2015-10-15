@@ -31,7 +31,7 @@ public class RegServer {
 	 * @param port An integer specifying the communication port of the server.
 	 * @throws IOException if an I/O exception occurs.
 	 */
-	public RegServer(int port) throws IOException {
+	RegServer(int port) throws IOException {
 		this.serverSocket = new ServerSocket(port);
 		this.clients = new ArrayList<ComServer>();
 	}
@@ -72,7 +72,13 @@ public class RegServer {
     			client = this.serverSocket.accept();
 				// Adds to the list of clients.
 				this.clients.add(new ComServer(client));
+                                System.out.println("A new Client has connected.");
+                                this.sendAll("A new Client has connected.");
     		} catch (SocketTimeoutException e) {
+                        Instant nowInstant = Instant.now().plusMillis(0);
+                        Float millisLeft = Float.parseFloat(""+(endInstant.toEpochMilli() - nowInstant.toEpochMilli())) / 1000;
+                        if(millisLeft > 0) System.out.println(millisLeft +" seconds left for Clients to connect.");
+                        else System.out.println("Maximum connexion time reached.");
     			// If the number of connections reached its limit.
     			if (this.getNumClients() >= this.maxConnOpen) {
     				break;
@@ -87,8 +93,6 @@ public class RegServer {
     		}
     	}
     }
-    
-    
     
     /**
      * Gets the number of clients currently connected.
@@ -123,6 +127,10 @@ public class RegServer {
     	this.clients.get(clientNumber).send(msg);
     }
 
+    public void sendAll(String msg) throws IOException {
+    	for (int i = 0; i < this.getNumClients(); ++i) this.send(i, msg);
+    }
+    
     /**
      * Closes the connection with a client.
      * 
