@@ -23,7 +23,7 @@ public class Game {
                 break;
                 
                 case "referee": 
-                    System.out.println("\nNot implemented yet.\n");
+                    new Referee().Start(12345, 4, 30000);
                 break;
                     
                 case "register": 

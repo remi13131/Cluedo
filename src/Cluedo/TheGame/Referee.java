@@ -2,11 +2,17 @@ package Cluedo.TheGame;
 
 import Cluedo.Helper.*;
 import Cluedo.Modele.*;
+import Cluedo.Networking.*;
+import java.io.IOException;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class Solo {
+public class Referee {
   
+    RegServer server;
+    
     int nbPlayers;
     int Turn;
     int Round;
@@ -18,7 +24,22 @@ public class Solo {
     
     Crime Crime;
     
-    public void Start() {
+    public void Start(int portNumber, int numClients, int timeout) {
+        System.out.println("Starting server.");
+	try {
+                server = new RegServer(portNumber, numClients, timeout);
+                System.out.println("Waiting for connections...");
+                server.open();
+                for (int i = 0; i < server.getNumClients(); ++i) {
+                        server.send(i, "begin");
+                }
+                String msg;
+                
+                server.close();
+            } catch (IOException e) {
+                    e.printStackTrace();
+            }
+	
         //Lancement d'une partie Solo
         this.newGame();
         
@@ -155,6 +176,19 @@ public class Solo {
         ArrayList<String> Ordre;
         boolean nextPlayer = true;
         
+        
+            try {
+                for (int i = 0; i < server.getNumClients(); ++i) {
+                    server.send(i, "next message");
+                }
+
+
+            } 
+            catch (IOException ex) {
+                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+            }
+ 
+                
         //On vérifie que le joueur courant peut encore donner des accusations
         if(!Players.get(Turn).isGame_over()){
             //On attend l'entrée du joueur courant par TraiterCommande qui s'assure de son formattage correct
@@ -206,55 +240,78 @@ public class Solo {
         
     public ArrayList<String> TraiterCommande(){
         ArrayList<String> Ordre=new ArrayList<String>();
-        
+        String msg;
         /* ICI EN COMMENTAIRES DES AFFICHAGES UTILES POUR LES TESTS.
         System.out.println("Choix Disponibles :\n"+Cards+"\n");
         System.out.println("player 0"+Players.get(0).Hand);
         System.out.println("Player 1 "+Players.get(1).Hand);
         System.out.println("Player 2 "+Players.get(2).Hand);
         System.out.println("Crime : "+Crime.getSuspect().getName()+" "+Crime.getRoom().getName()+" "+Crime.getWeapon().getName());*/
-        
-        Scanner sc = new Scanner(System.in);
 
-        System.out.println("\n"+Players.get(Turn).getName()+" >");
+        try {
+                for (int i = 0; i < server.getNumClients(); ++i) {
+                    if(Players.get(Turn).getNbr()==i){
+                        server.send(i, "\n"+Players.get(Turn).getName()+", it is your turn to play."); 
+                        server.send(i, Players.get(Turn).getName()+" >");  
+                    }
+                    else{
+                        server.send(i, "\n" + Players.get(Turn).getName() + " is choosing the cards to ask.");   
+                    }
+                }
 
-        //On attend l'entrée du joueur
-        String str = sc.nextLine();
-        //On Split pour tester chaque argument et on stocke dans Ordre
-        String[] commande=str.split(" ");
-        for(int i=0;i<commande.length;i++) Ordre.add(commande[i]);
-        
-        //Vérification que la commande entrée contient des mots autorisés
-        if(Ordre.get(0).toLowerCase().equals("exit")||Ordre.get(0).toLowerCase().equals("help")||Ordre.get(0).toLowerCase().equals("show"))
-            return Ordre;
-        else{
-            //La commande doit posséder 5 arguments si autre que "exit", "help" ou "show"
-            if((Ordre.size()!=5) || 
-               (!Ordre.get(0).toLowerCase().equals("move")) || 
-               (!Ordre.get(1).toLowerCase().equals("suggest")&&!Ordre.get(1).toLowerCase().equals("accuse"))) {
-                System.out.println("Bad command provided.\n");
-                Help.help_menu_game();
-                return TraiterCommande();
+
+            } 
+            catch (IOException ex) {
+                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
             }
+ 
 
-            int roomCards=0;
-            int suspectCards=0;
-            int weaponCards=0;
-            //On compte le nombre de cartes Room, Weapon et Suspect dans la commande
-            for(int i=2;i<=4;i++){
-                for(Card card : Cards) {
-                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) roomCards++;
-                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) suspectCards++;
-                    if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) weaponCards++;
+        try {
+            //On attend l'entrée du joueur
+            msg  = server.receive(Players.get(Turn).getNbr());
+
+
+            System.out.format("Client %1$d: %2$s\n", Players.get(Turn).getNbr(), msg);
+
+            //On Split pour tester chaque argument et on stocke dans Ordre
+            String[] commande=msg.split(" ");
+            for(int i=0;i<commande.length;i++) Ordre.add(commande[i]);
+
+            //Vérification que la commande entrée contient des mots autorisés
+            if(Ordre.get(0).toLowerCase().equals("exit")||Ordre.get(0).toLowerCase().equals("help")||Ordre.get(0).toLowerCase().equals("show"))
+                return Ordre;
+            else{
+                //La commande doit posséder 5 arguments si autre que "exit", "help" ou "show"
+                if((Ordre.size()!=5) || 
+                   (!Ordre.get(0).toLowerCase().equals("move")) || 
+                   (!Ordre.get(1).toLowerCase().equals("suggest")&&!Ordre.get(1).toLowerCase().equals("accuse"))) {
+                    System.out.println("Bad command provided.\n");
+                    Help.help_menu_game();
+                    return TraiterCommande();
+                }
+
+                int roomCards=0;
+                int suspectCards=0;
+                int weaponCards=0;
+                //On compte le nombre de cartes Room, Weapon et Suspect dans la commande
+                for(int i=2;i<=4;i++){
+                    for(Card card : Cards) {
+                        if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Rooms")) roomCards++;
+                        if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Suspect")) suspectCards++;
+                        if(card.getName().toLowerCase().equals(Ordre.get(i).toLowerCase())&&card.getType().equals("Weapons")) weaponCards++;
+                    }
+                }
+
+                //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
+                if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
+                    System.out.println("Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
+                    System.out.println("Available Cards:\n"+Cards+"\n");
+                    return TraiterCommande();
                 }
             }
-            
-            //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
-            if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
-                System.out.println("Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
-                System.out.println("Available Cards:\n"+Cards+"\n");
-                return TraiterCommande();
-            }
+        
+        } catch (IOException ex) {
+            Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return Ordre;
@@ -296,11 +353,26 @@ public class Solo {
                 }
             }
             
-            System.out.println("\n"+Players.get(Turn).getName()+" to "+Players.get(NumTestedPlayer).getName()+": \"I suggest it was "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".\"\n");
+            try {    
+                for (int i = 0; i < server.getNumClients(); ++i) {
+                    server.send(i, "\n"+Players.get(Turn).getName()+" to "+Players.get(NumTestedPlayer).getName()+": \"I suggest it was "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".\"\n");
+                }
+            } 
+            catch (IOException ex) {
+                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+            }
             
             if(Info.size()<1) {
                 //Le joueur interrogé n'avait aucune des cartes demandées
-                System.out.println("\t"+Players.get(NumTestedPlayer).getName()+": \"I cannot disprove your suggestion.\"\n");
+                try {    
+                    for (int i = 0; i < server.getNumClients(); ++i) {
+                        server.send(i, "\t"+Players.get(NumTestedPlayer).getName()+": \"I cannot disprove your suggestion.\"\n");
+                    }
+                } 
+                catch (IOException ex) {
+                    Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
                 if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
                 else  NumTestedPlayer = NumTestedPlayer+1;
                 if(NumTestedPlayer == Turn) end = true;
@@ -334,29 +406,48 @@ public class Solo {
         //Fonction pour demander à un joueur p quelle quelle carte contenue dans Info veut-il montrer.
         boolean validAnswer=false;
         
-        System.out.println("\t"+p.getName()+", Which card do you want to show ?");
+        try {
+            server.send(p.getNbr(), "\t"+p.getName()+", Which card do you want to show ?");
+        } catch (IOException ex) {
+            Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         int i = 0;
         for(Card carte : Info) {
-            System.out.println("\t"+i+") "+carte);
+            try {
+                server.send(p.getNbr(), "\t"+i+") "+carte);
+            } catch (IOException ex) {
+                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+            }
             i++;
         }
         
         String str="";
-        Scanner sc;
         while(!validAnswer){
-            sc = new Scanner(System.in);
-            System.out.println("\t"+p.getName()+" > ");
-            str = sc.nextLine();
+            try {
+                //On attend l'entrée du joueur
+                str  = server.receive(Players.get(Turn).getNbr());
+            } catch (IOException ex) {
+                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+            }
             if(Utils.isValidInt(str)) 
                if(Integer.parseInt(str)>=0 && Integer.parseInt(str)<Info.size())
                    validAnswer=true;
             
             if(!validAnswer){
-                System.out.println("\n\tUnknown choice.");
-                System.out.println("\t"+p.getName()+", Which card do you want to show ?");
+                try {
+                    server.send(p.getNbr(), "\n\tUnknown choice."+"\n\t"+p.getName()+", Which card do you want to show ?");
+                } catch (IOException ex) {
+                    Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
                 i = 0;
                 for(Card carte : Info) {
-                    System.out.println("\t"+i+") "+carte);
+                    try {
+                        server.send(p.getNbr(), "\t"+i+") "+carte);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     i++;
                 }
             }
