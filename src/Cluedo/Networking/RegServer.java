@@ -93,6 +93,10 @@ public class RegServer {
     	}
     }
     
+    public ComServer getClient(int i){
+        return this.clients.get(i);
+    }
+    
     /**
      * Gets the number of clients currently connected.
      * 

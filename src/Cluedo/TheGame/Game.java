@@ -36,7 +36,12 @@ public class Game {
                     if(command.length > 1) playerType=command[1];
                     if(command.length > 2) playerName=command[2];
                     if(command.length > 3) IPAddress=command[3];
-                    new Register(playerName).Start(IPAddress, 12345);
+                    try {
+                        new Register(playerName).Start(IPAddress, 12345);
+                    }
+                    catch (Exception e) {
+                        System.out.println("Connexion closed.");
+                    }
                 break;
                      
                 case "help": 

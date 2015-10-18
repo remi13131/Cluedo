@@ -10,21 +10,21 @@ public class Help {
     public Help() {
         Cards.add(new Card("Scarlett", "Suspect"));
         Cards.add(new Card("Plum", "Suspect"));
-        Cards.add(new Card("Peacack", "Suspect"));
+        Cards.add(new Card("Peacock", "Suspect"));
         Cards.add(new Card("Green", "Suspect"));
         Cards.add(new Card("Mustard", "Suspect"));
         Cards.add(new Card("White", "Suspect"));
         Cards.add(new Card("Candlestick", "Weapons"));
         Cards.add(new Card("Dagger", "Weapons"));
-        Cards.add(new Card("Pipe", "Weapons"));
+        Cards.add(new Card("LeadPipe", "Weapons"));
         Cards.add(new Card("Revolver", "Weapons"));
         Cards.add(new Card("Rope", "Weapons"));
         Cards.add(new Card("Spanner", "Weapons"));
         Cards.add(new Card("Kitchen", "Rooms"));
         Cards.add(new Card("Ballroom", "Rooms"));
         Cards.add(new Card("Conservatory", "Rooms"));
-        Cards.add(new Card("Dining", "Rooms"));
-        Cards.add(new Card("Billard", "Rooms"));
+        Cards.add(new Card("DiningRoom", "Rooms"));
+        Cards.add(new Card("BillardRoom", "Rooms"));
         Cards.add(new Card("Library", "Rooms"));
         Cards.add(new Card("Lounge", "Rooms"));
         Cards.add(new Card("Hall", "Rooms"));
@@ -40,7 +40,7 @@ public class Help {
     }
     
     public static void messageAccueil(){
-        System.out.println("CLUEDO 0.1\n\n" +
+        System.out.println("CLUEDO 0.2\n\n" +
                            "Réalisé par : \n\tJaouad Ouled Moussa\tAla Gharbi\tLamia Elhani\tRémi Dipaola\n" +
                            "\tLicense 3 Informatique - Faculté Jean Perrin de Lens - Université d'Artois");
         
@@ -70,14 +70,14 @@ public class Help {
                            "\tShow this message.\n");
     }
     
-    public static void help_menu_game(){
-	System.out.println("\nCommands available during a match:\n\n"+
+    public static String help_menu_game(){
+	return "\nCommands available during a match:\n\n"+
                            "\t* show\n\t\tShow information about the state of the match.\n\n"+
                            "\t* move <type > <card1 > <card2 > <card3 >\n"+
                            "\t\t<type > : Either -suggest- or -accuse- \n"+
                            "\t\t<cardN > : A card.\n\n"+
                            "\t* exit\n"+
-                           "\t\tEnd match.\n");
+                           "\t\tEnd match.\n";
 	
     }
     

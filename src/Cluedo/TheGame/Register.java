@@ -78,6 +78,9 @@ public class Register {
         do {
                 serverMessage = client.receive();
                 argCommand=serverMessage.toLowerCase().split(" ");
+                
+                if (serverMessage.equals(ComServer.END_MSG)) break;
+                
                 switch(argCommand[0]) {
 
                     case "play":
@@ -145,10 +148,14 @@ public class Register {
                             break;
                                 
                             case "invalid" :
-                                System.out.println();
+                                System.out.println("Invalid command provided.\n");
+                                System.out.println(Help.help_menu_game());
+                                System.out.println("\nAvailable Cards:\n"+Help.Cards+"\n");
                             break;
                                 
                             case "forbidden" :
+                                System.out.println("Invalid move : Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
+                                System.out.println("Available Cards:\n"+Help.Cards+"\n");
                             break;
                                 
                             case "other" : System.out.println("Error : "+serverMessage.substring(serverMessage.indexOf(' ')+1).substring(serverMessage.indexOf(' ')+1));
@@ -161,8 +168,6 @@ public class Register {
 
                     default: System.out.println(serverMessage); break;
                 }
-
-                if (serverMessage.equals(ComServer.END_MSG)) end = true;
 
         }while(!end);
         

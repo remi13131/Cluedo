@@ -32,6 +32,10 @@ public class ComServer {
         in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
     }
     
+    public PrintWriter getOutStream(){
+        return this.out;
+    }
+    
     /**
      * Sends a message to the client.
      * 
