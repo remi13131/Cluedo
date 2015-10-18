@@ -29,8 +29,7 @@ public class ComServer {
     public ComServer(Socket socket) throws IOException {
     	this.socket = socket;
         out = new PrintWriter(this.socket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(
-        		this.socket.getInputStream()));
+        in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
     }
     
     /**
@@ -50,13 +49,7 @@ public class ComServer {
      * @throws IOException if an I/O error occurs.
      */
     public String recieve() throws IOException {
-        String line = null;
-        String msg="";
-        do {
-            line = in.readLine();
-            msg += line;
-        } while (line != null);
-    	return msg;
+    	return this.in.readLine();
     }
     
     /**

@@ -4,12 +4,11 @@ import java.util.*;
 import java.util.regex.*;
 
 public class Utils {
-    
-    public static String saisieUtilisateur(){
+    public static String saisieUtilisateur(String message){
         //Permet à l'utilisateur d'entrer son choix dans l'invite de commande
-        System.out.println("\nType \"help\" for some information.");
+        System.out.println(message+"\n"+
+                           " > ");
         Scanner sc = new Scanner(System.in);
-        System.out.println(" > ");
         String str = sc.nextLine();
         return str;
     }

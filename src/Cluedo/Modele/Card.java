@@ -1,6 +1,6 @@
 package Cluedo.Modele;
 
-public class Card {
+public class Card { 
     String name;
     String type;
 
@@ -10,7 +10,7 @@ public class Card {
         this.name = name;
         this.type = type;
     }
-
+    
     public String getName() {
         return name;
     }

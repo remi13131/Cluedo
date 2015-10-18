@@ -33,8 +33,7 @@ public class Client {
 		
 		this.socket = new Socket(addr, port);
 		this.out = new PrintWriter(socket.getOutputStream(), true);
-		this.in = new BufferedReader(
-				new InputStreamReader(socket.getInputStream()));
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
 	
 	/**
@@ -53,9 +52,13 @@ public class Client {
 	 * @param msg A String containing the message.
 	 */
 	public void send(String msg) {
-            this.out.format(msg);
+            this.out.println(msg);
 	}
 	
+        public void flushOut(){
+             this.out.flush();
+        }
+        
 	/**
 	 * Closes the connection with the server.
 	 * 

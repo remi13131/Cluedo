@@ -3,13 +3,17 @@ package Cluedo.TheGame;
 import Cluedo.Helper.*;
 import Cluedo.Modele.*;
 import Cluedo.Networking.*;
+
 import java.io.IOException;
+import java.net.InetAddress;
 
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Referee {
+    Help Help = new Help();
+    
     int portNumber, numClients, timeout;
     RegServer server;
     
@@ -22,19 +26,24 @@ public class Referee {
     Crime Crime;
     
     public void Start(int portNumber, int numClients, int timeout) throws IOException {
+        System.out.println("\nThis server name and IP address are : "+InetAddress.getLocalHost());
+        Utils.saisieUtilisateur("\nPress Enter to start Registration phase. This proccess will automatically end after "+(timeout/1000)+" seconds.\n");
+        
         this.portNumber = portNumber;
         this.numClients = numClients;
         this.timeout = timeout;
         
         this.waitPlayersConnection();
         
-        //Lancement d'une partie Solo
-        this.newGame();
+        if(nbPlayers>0)
+            //Lancement d'une partie Solo
+            this.newGame();
+        else System.out.println("\nNo players joigned the Game Server during Registration phase.");
         
+        server.sendAll(ComServer.END_MSG);
         server.close();
-        
-        System.out.println("\nPress Enter to go back to Principal Menu.\n");
-        this.waitEnter();
+       
+        Utils.saisieUtilisateur("\nPress Enter to go back to Principal Menu.\n");
     }
     
     public void waitPlayersConnection() throws IOException{
@@ -43,8 +52,8 @@ public class Referee {
         server = new RegServer(portNumber, numClients, timeout);
         System.out.println("Waiting for connections...");
         server.open();
-
-        server.sendAll("You are now connected with the Game Server.");
+        
+        nbPlayers = server.getNumClients();
     }
     
     public void newGame() throws IOException {
@@ -52,11 +61,8 @@ public class Referee {
         resolved=false;
         noMorePlayers=false;
 
-        System.out.println(server.getNumClients());
-        nbPlayers = server.getNumClients();
-
         Turn=0;
-        Round=1;
+        Round=0;
 
         this.Joueurs(); //Définition du nombre de joueurs
         this.Carte(); //Ajout des Cartes dans le jeu 
@@ -68,64 +74,48 @@ public class Referee {
         this.playGame(); //Lancer la partie
     }
     
-    public void playGame() throws IOException {
-        server.sendAll("\nReclusive millionaire Samuel Black’s been murdered in his mansion! \nNow, it’s up to you to crack the case!\nQuestion everything to unravel the mystery. Who did it? Where? And with what weapon?\n");
-        
-         //Tant que le mystère n'est pas résolu, ou qu'il y a encore des joueurs pouvant donner des accusations, on passe au tour suivant
-        while(!resolved && !noMorePlayers){
-            this.nextTurn();
+    public void Joueurs() throws IOException{
+        Players = new ArrayList<>();
+        String playerName;
+        int i;
+        for(i=0; i<nbPlayers; i++) {
+            playerName=server.receive(i);
+            playerName += " (Player "+i+")";
+            Players.add(new Player(i, playerName));
+            server.send(i, "ack "+i);
         }
+        for(i=0; i<nbPlayers; i++) server.sendAll("addplayer "+Players.get(i).getName());
+        
+    }
+    
+    public void playGame() throws IOException {
+        server.sendAll("\nReclusive millionaire Samuel Black’s been murdered in his mansion! \n"
+                     + "Now, it’s up to you to crack the case!\n"
+                     + "Question everything to unravel the mystery. "
+                     + "Who did it? Where? And with what weapon?\n");
+        
+        //Tant que le mystère n'est pas résolu, ou qu'il y a encore des joueurs pouvant donner des accusations, on passe au tour suivant
+        while(!resolved && !noMorePlayers) this.nextTurn();
         
         //Fin de la partie, affichage du texte de résolution / non résolution de l'égnigme, retour au menu proincipal
-        if(resolved) System.out.println("\n##################################\n"
-                                      + "# BRAVO ! You solved the crime ! #\n"
-                                      + "##################################");
-        if(noMorePlayers) System.out.println("No one could solve the Crime. \nThe Crime was made by "+Crime.getSuspect().getName()+", in the "+Crime.getRoom().getName()+", with the "+Crime.getWeapon().getName()+".\n"
+        if(resolved) server.sendAll("\n"
+                                  + "##################################\n"
+                                  + "# BRAVO ! You solved the crime ! #\n"
+                                  + "##################################");
+        
+        if(noMorePlayers) server.sendAll("No one could solve the Crime. \nThe Crime was made by "+Crime.getSuspect().getName()+", in the "+Crime.getRoom().getName()+", with the "+Crime.getWeapon().getName()+".\n"
                                            + "Play again, maybe you will get more Luck next time ! :)\n");
         
-        System.out.println("You have played "+Round+" Rounds.");
-    }
-    
-    public void waitEnter(){
-        Scanner sc = new Scanner(System.in);
-        String str = sc.nextLine();
-    }
-    
-    public void Joueurs(){
-        Players = new ArrayList<>();
-        int i;
-        for(i=0; i<nbPlayers; i++) Players.add(new Player(i, "Player "+i));
+        server.sendAll("You have played "+Round+" Rounds.");
     }
     
     public void Carte()
     {
-        Cards=new ArrayList<>();
+        Cards=Help.Cards;
         Deck=new ArrayList<>();
         Suspects=new ArrayList<>();
         Weapons=new ArrayList<>();
         Rooms=new ArrayList<>();
-        
-        Cards.add(new Card("Scarlett", "Suspect"));
-        Cards.add(new Card("Plum", "Suspect"));
-        Cards.add(new Card("Peacack", "Suspect"));
-        Cards.add(new Card("Green", "Suspect"));
-        Cards.add(new Card("Mustard", "Suspect"));
-        Cards.add(new Card("White", "Suspect"));
-        Cards.add(new Card("Candlestick", "Weapons"));
-        Cards.add(new Card("Dagger", "Weapons"));
-        Cards.add(new Card("Pipe", "Weapons"));
-        Cards.add(new Card("Revolver", "Weapons"));
-        Cards.add(new Card("Rope", "Weapons"));
-        Cards.add(new Card("Spanner", "Weapons"));
-        Cards.add(new Card("Kitchen", "Rooms"));
-        Cards.add(new Card("Ballroom", "Rooms"));
-        Cards.add(new Card("Conservatory", "Rooms"));
-        Cards.add(new Card("Dining", "Rooms"));
-        Cards.add(new Card("Billard", "Rooms"));
-        Cards.add(new Card("Library", "Rooms"));
-        Cards.add(new Card("Lounge", "Rooms"));
-        Cards.add(new Card("Hall", "Rooms"));
-        Cards.add(new Card("Study", "Rooms")); 
         
         for(Card card : Cards){
             if(card.getType().equals("Rooms")) Rooms.add(card);
@@ -151,7 +141,7 @@ public class Referee {
         Rooms.remove(0);
     }
 
-    public void Distribuer(){
+    public void Distribuer() throws IOException{
         int i=0;
         int j=0;
         
@@ -167,7 +157,8 @@ public class Referee {
                 i+=1;
             }
         }
-        System.out.println("\nCards have been dealed.\n");
+        for(i=0; i<nbPlayers; i++) server.send(i, "start "+Players.get(i).handToString());
+        server.sendAll("\nCards have been dealed.\n");
     }	
 
     public void nextTurn() throws IOException {
@@ -175,8 +166,6 @@ public class Referee {
 
         ArrayList<String> Ordre;
         boolean nextPlayer = true;
-    
-        server.sendAll("next message");
    
         //On vérifie que le joueur courant peut encore donner des accusations
         if(!Players.get(Turn).isGame_over()){
@@ -201,24 +190,25 @@ public class Referee {
                 break;
                     
                 case "show" : 
-                    Players.get(Turn).show();
+                    server.send(Turn, Players.get(Turn).show());
                     nextPlayer=false;
                 break;
                                         
-                case "exit" : 
+                case "exit" :
+                    server.close(Turn);
+                    server.sendAll("error exit "+Turn);
                     noMorePlayers=true;
                 break;
                     
                 case "help" : 
                     nextPlayer=false; 
-                    Help.help_menu_game(); 
+                    Help.help_menu_game();
                 break;
                     
                 default: break;
             }
 
-        } else System.out.println(Players.get(Turn).getName()+" is out of the game. Turn skipped.");
-        
+        } else server.sendAll(Players.get(Turn).getName()+" is out of the game. Turn skipped.");
         //Tour terminé, on passe la variable Turn au numéro du prochain Joueur
         if(nextPlayer){
             if(Turn==nbPlayers-1)Turn=0;
@@ -234,25 +224,18 @@ public class Referee {
         
         /* ICI EN COMMENTAIRES DES AFFICHAGES UTILES POUR LES TESTS.
         System.out.println("Choix Disponibles :\n"+Cards+"\n");
-        System.out.println("player 0"+Players.get(0).Hand);
-        System.out.println("Player 1 "+Players.get(1).Hand);
-        System.out.println("Player 2 "+Players.get(2).Hand);
-        System.out.println("Crime : "+Crime.getSuspect().getName()+" "+Crime.getRoom().getName()+" "+Crime.getWeapon().getName());*/
+        System.out.println("player 0"+Players.get(0).Hand);*/
+        System.out.println("Player 1 "+Players.get(0).getHand());
+        System.out.println("Player 2 "+Players.get(1).getHand());
+        System.out.println("Crime : "+Crime.getSuspect().getName()+" "+Crime.getRoom().getName()+" "+Crime.getWeapon().getName());
         
-        for (int i = 0; i < server.getNumClients(); ++i) {
-            if(Players.get(Turn).getNbr()==i){
-                server.send(i, "\n"+Players.get(Turn).getName()+", it is your turn to play."); 
-                server.send(i, Players.get(Turn).getName()+" >");  
-            }
-            else{
-                server.send(i, "\n" + Players.get(Turn).getName() + " is choosing the cards to ask.");   
-            }
-        }
-        
+        for (int i = 0; i < server.getNumClients(); ++i)
+            if(Players.get(Turn).getNbr()==i) server.send(i, "play");
+            else server.send(i, "\n" + Players.get(Turn).getName() + " is playing.");
+            
         //On attend l'entrée du joueur
         msg  = server.receive(Turn);
-
-        System.out.format("Client %1$d: %2$s\n", Players.get(Turn).getNbr(), msg);
+        System.out.format("%1$s: %2$s\n", Players.get(Turn).getName(), msg);
 
         //On Split pour tester chaque argument et on stocke dans Ordre
         String[] commande=msg.split(" ");
@@ -263,10 +246,11 @@ public class Referee {
             return Ordre;
         else{
             //La commande doit posséder 5 arguments si autre que "exit", "help" ou "show"
+           
             if((Ordre.size()!=5) || 
                (!Ordre.get(0).toLowerCase().equals("move")) || 
                (!Ordre.get(1).toLowerCase().equals("suggest")&&!Ordre.get(1).toLowerCase().equals("accuse"))) {
-                System.out.println("Bad command provided.\n");
+                server.send(Turn, "error Bad command provided.\n");
                 Help.help_menu_game();
                 return TraiterCommande();
             }
@@ -285,21 +269,21 @@ public class Referee {
 
             //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
             if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
-                System.out.println("Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
-                System.out.println("Available Cards:\n"+Cards+"\n");
+                server.sendAll("error Bad Cards given. Please provide ONE Room, ONE Suspect and ONE Weapon available.");
+                server.sendAll("error Available Cards:\n"+Cards+"\n");
                 return TraiterCommande();
             }
         }
         return Ordre;
     }
 
-    public void Suggest(ArrayList<String> Ordre)
+    public void Suggest(ArrayList<String> Ordre) throws IOException
     { 
         ArrayList<Card>Info=new ArrayList<Card>();
         Player PlayersPossess=new Player();
         
         boolean end = false;
-        int NumTestedPlayer=Players.get(Turn).getNbr();
+        int NumTestedPlayer=Turn;
         
         if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
         else  NumTestedPlayer = NumTestedPlayer+1;
@@ -316,6 +300,8 @@ public class Referee {
             }
         }
         
+        server.sendAll("move "+Turn+" suggest "+Suspect.getName()+" "+Room.getName()+" "+Weapon.getName());
+        
         //Tant que le joueur suivant n'a pas une des cartes demandées, ou que tous les jouerus ont été interrogés, interroger le joueur suivant
         while(!end) {
             for (int i=2;i<=4;i++){
@@ -327,112 +313,40 @@ public class Referee {
                         end = true;
                     }
                 }
-            }
-            
-            try {    
-                for (int i = 0; i < server.getNumClients(); ++i) {
-                    server.send(i, "\n"+Players.get(Turn).getName()+" to "+Players.get(NumTestedPlayer).getName()+": \"I suggest it was "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".\"\n");
-                }
-            } 
-            catch (IOException ex) {
-                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }          
             
             if(Info.size()<1) {
                 //Le joueur interrogé n'avait aucune des cartes demandées
-                try {    
-                    for (int i = 0; i < server.getNumClients(); ++i) {
-                        server.send(i, "\t"+Players.get(NumTestedPlayer).getName()+": \"I cannot disprove your suggestion.\"\n");
-                    }
-                } 
-                catch (IOException ex) {
-                    Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
                 if(NumTestedPlayer==(Players.size()-1)) NumTestedPlayer = 0;
                 else  NumTestedPlayer = NumTestedPlayer+1;
                 if(NumTestedPlayer == Turn) end = true;
+                server.sendAll("info noshow "+NumTestedPlayer+" "+Turn);
             }
         }
         
-        
-        boolean knownClue;
         //Si après avoir interrogés les autres joueurs, quelqu'un possédait ces cartes
         if(Info.size()>=1){
             //On demande au joueur en question de choisir une des cartes qu'il possède et qui est demandée pour la montrer
-            Card carte = chooseCard(PlayersPossess, Info);
-            
-            knownClue=false;
-            //On regarde si le joueur qui suggère possédait déjà cet indice, sinon on l'ajoute à la liste des indices de ce joueur
-            for(Card clue : Players.get(Turn).getClues())
-                if(clue.getName().equals(carte.getName())){
-                    System.out.println("\n"+PlayersPossess.getName()+" show you  "+carte+". You already knew this Clue.");
-                    knownClue=true;
-                }
-
-            if(!knownClue){
-                System.out.println("\n"+PlayersPossess.getName()+" show you  "+carte+". You Keep it in your Clues.\n");
-                Players.get(Turn).getClues().add(carte);
+            String infoString = "";
+            int i;
+            for(i=0; i<Info.size(); i++) infoString += Info.get(i).getName()+" ";
+            server.sendAll(PlayersPossess.getName()+" is choosing a card to show.");
+            server.send(PlayersPossess.getNbr(), "ask "+infoString.trim());
+            String answerClient;
+            answerClient = server.receive(PlayersPossess.getNbr());
+            String answerClientTab[] = answerClient.split(" ");
+            Card carte = Help.nameToCard(answerClientTab[1]);
+            for(i=0; i<nbPlayers; i++) {
+                if(i!=Turn) server.send(i, "info show "+PlayersPossess.getNbr()+" "+Turn);
+                else if(i!=PlayersPossess.getNbr()) server.send(i, "info show "+PlayersPossess.getNbr()+" "+carte.getName());
             }
-        } else System.out.println("\nNone of the players was able to show you one of the Cards you suggested.\n");       
+            
+            if(!Players.get(Turn).isKnownClue(carte)) Players.get(Turn).getClues().add(carte);
+        }
         
     }
     
-    public Card chooseCard(Player p, ArrayList<Card> Info){  
-        //Fonction pour demander à un joueur p quelle quelle carte contenue dans Info veut-il montrer.
-        boolean validAnswer=false;
-        
-        try {
-            server.send(p.getNbr(), "\t"+p.getName()+", Which card do you want to show ?");
-        } catch (IOException ex) {
-            Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        int i = 0;
-        for(Card carte : Info) {
-            try {
-                server.send(p.getNbr(), "\t"+i+") "+carte);
-            } catch (IOException ex) {
-                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            i++;
-        }
-        
-        String str="";
-        while(!validAnswer){
-            try {
-                //On attend l'entrée du joueur
-                str  = server.receive(Players.get(Turn).getNbr());
-            } catch (IOException ex) {
-                Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if(Utils.isValidInt(str)) 
-               if(Integer.parseInt(str)>=0 && Integer.parseInt(str)<Info.size())
-                   validAnswer=true;
-            
-            if(!validAnswer){
-                try {
-                    server.send(p.getNbr(), "\n\tUnknown choice."+"\n\t"+p.getName()+", Which card do you want to show ?");
-                } catch (IOException ex) {
-                    Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                i = 0;
-                for(Card carte : Info) {
-                    try {
-                        server.send(p.getNbr(), "\t"+i+") "+carte);
-                    } catch (IOException ex) {
-                        Logger.getLogger(Referee.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    i++;
-                }
-            }
-        }
-        
-        return Info.get(Integer.parseInt(str));
-    }
-    
-    public void Accuse(ArrayList<String> Ordre){
+    public void Accuse(ArrayList<String> Ordre) throws IOException{
         int nbCorrect=0;
         Card Room=new Card();
         Card Weapon=new Card();
@@ -450,18 +364,18 @@ public class Referee {
             if(Ordre.get(i).toLowerCase().equals(Crime.getWeapon().getName().toLowerCase())) nbCorrect++;
         }
         
-        System.out.println("\n"+Players.get(Turn).getName()+": \"I accuse "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".\"\n");
+        server.sendAll("move "+Turn+" accuse "+Suspect.getName()+" "+Room.getName()+" "+Weapon.getName());
         
         //Si il y a exactement trois cartes correspondantes, le Crime est résolu !
         if(nbCorrect == 3){
-            System.out.println("The crime was made by "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".");
-            System.out.println(Players.get(Turn).getName()+" solved the mystery !!");
+            server.sendAll("The crime was made by "+Suspect.getName()+", in the "+Room.getName()+", with the "+Weapon.getName()+".");
+            server.sendAll(Players.get(Turn).getName()+" solved the mystery !!");
             resolved = true;
         }
         ////Sinon, le joueur portant l'accusation regarde quelle était l'égnigme, et est éliminé
         else {
-            System.out.println("The crime was made by "+Crime.getSuspect().getName()+", in the "+Crime.getRoom().getName()+", with the "+Crime.getWeapon().getName()+". \n");
-            System.out.println("Too bad, you are wrong! Your game is over but you still have to show clues to other players!");
+            server.send(Turn, "The crime was made by "+Crime.getSuspect().getName()+", in the "+Crime.getRoom().getName()+", with the "+Crime.getWeapon().getName()+". \n");
+            server.sendAll("Too bad,"+ Players.get(Turn).getName()+ "is wrong! His game is over but he still has to show clues to other players!");
             Players.get(Turn).setGame_over(true);
             noMorePlayers=true;
             for(Player player : Players) if(!player.isGame_over()) noMorePlayers=false;

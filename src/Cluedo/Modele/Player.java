@@ -17,13 +17,27 @@ public class Player {
         this.name=name;
     }
     
-    public void show(){
-        System.out.println("Your Hand: \n"+this.Hand);
-        System.out.println("Your Clues: \n"+this.Clues);
-        if(!this.Game_over) System.out.println("You have not made an accusation yet.");
-        else System.out.println("You a out of the game. You can only give clues to others.");
+    public String show(){
+        String showString = "";
+        showString+="\nYour Hand: \n"+this.Hand;
+        showString+="\nYour Clues: \n"+this.Clues;
+        if(!this.Game_over) showString+="\nYou have not made an accusation yet.";
+        else showString+="\nYou are out of the game. You can only give clues to others.";
+        return showString;
+    }
+    
+    public String handToString(){
+        String listCards = "";
+        for(Card card : this.Hand) listCards += card.name+" ";
+        return listCards.trim();
     }
 
+    public boolean isKnownClue(Card card){
+        for(Card clue : this.getClues())
+            if(clue.getName().equals(card.getName())) return true;
+        return false;
+    }
+    
     public int getNbr() {
         return nbr;
     }

@@ -19,7 +19,7 @@ public class RegServer {
 	// Registration period timeout in milliseconds.
 	private int regTimeout = 30000;
 	// Maximum number of connections open at the same time.
-	private int maxConnOpen = 5;
+	public static int maxConnOpen = 5;
 	// Server socket.
 	private ServerSocket serverSocket = null;
 	// List of communication servers, one for each client.
@@ -73,7 +73,6 @@ public class RegServer {
 				// Adds to the list of clients.
 				this.clients.add(new ComServer(client));
                                 System.out.println("A new Client has connected.");
-                                this.sendAll("A new Client has connected.");
     		} catch (SocketTimeoutException e) {
                         Instant nowInstant = Instant.now().plusMillis(0);
                         Float millisLeft = Float.parseFloat(""+(endInstant.toEpochMilli() - nowInstant.toEpochMilli())) / 1000;
@@ -112,7 +111,8 @@ public class RegServer {
      * @throws IOException if an I/O error occurs.
      */
     public String receive(int clientNumber) throws IOException {
-    	return this.clients.get(clientNumber).recieve();
+        String msg = this.clients.get(clientNumber).recieve();
+    	return msg;
     }
     
     /**

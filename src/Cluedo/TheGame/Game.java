@@ -13,11 +13,13 @@ public class Game {
         Help.messageAccueil();
         Help.welcome();
         String choix="none";
-        
+        String command[];
         //Boucle Principale
-        while(!choix.toLowerCase().equals("")){
-            choix = Utils.saisieUtilisateur();
-            switch(choix.toLowerCase()){
+        while(!choix.toLowerCase().equals("exit")){
+            choix = Utils.saisieUtilisateur("\nType \"help\" for some information.");
+            choix = choix.toLowerCase().replaceAll("\\s+", " ");
+            command = choix.split(" ");
+            switch(command[0]){
                 case "solo": 
                     new Solo().Start(); //On lance une partie Solo
                     Help.welcome();
@@ -27,8 +29,14 @@ public class Game {
                     new Referee().Start(12345, 4, 10000);
                 break;
                     
-                case "register": 
-                    System.out.println("\nNot implemented yet.\n");
+                case "register":
+                    String playerName="";
+                    String playerType="human";
+                    String IPAddress="localhost";
+                    if(command.length > 1) playerType=command[1];
+                    if(command.length > 2) playerName=command[2];
+                    if(command.length > 3) IPAddress=command[3];
+                    new Register(playerName).Start(IPAddress, 12345);
                 break;
                      
                 case "help": 
