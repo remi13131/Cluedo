@@ -37,7 +37,10 @@ public class Game {
                     if(command.length > 2) playerName=command[2];
                     if(command.length > 3) IPAddress=command[3];
                     try {
-                        new Register(playerName).Start(IPAddress, 12345);
+                        if(playerType.equals("human"))
+                            new Register(playerName).Start(IPAddress, 12345);
+                        else if(playerType.equals("human"))
+                            new RegComputer().Start(IPAddress, 12345);
                     }
                     catch (Exception e) {
                         System.out.println("Connexion closed.");

@@ -2,12 +2,15 @@ package Cluedo.Modele;
 
 import Cluedo.Modele.Card;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Player {
     int nbr;
     String name;
     ArrayList<Card> Hand=new ArrayList<Card>();
     ArrayList<Card> Clues=new ArrayList<Card>();
+    Map<String, ArrayList<Card>> CluesMap = new HashMap<String, ArrayList<Card>>();
     boolean Game_over = false;
 
     public Player() {}
@@ -15,6 +18,16 @@ public class Player {
     public Player(int nbr, String name) {
         this.nbr = nbr;
         this.name=name;
+    }
+    
+    public void initCluesMap(ArrayList<Player> Players){
+        for(Player p : Players)
+            this.CluesMap.put(p.getName(), new ArrayList<Card>());
+    }
+    
+    public void initCluesMapString(ArrayList<String> Players){
+        for(String p : Players)
+            this.CluesMap.put(p, new ArrayList<Card>());
     }
     
     public String show(){

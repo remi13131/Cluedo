@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Register {
+public class RegComputer {
     Help Help = new Help();
     
     int portNumber;
@@ -20,9 +20,8 @@ public class Register {
     Player player = new Player();
     ArrayList<String> players = new ArrayList<>();
     
-    public Register(String name) {
-        if(name.length()>0) player.setName(name);
-        else player.setName("anonymous");
+    public RegComputer() {
+        player.setName("Computer");
     }
     
     public void Start(String hostName, int portNumber) throws IOException {

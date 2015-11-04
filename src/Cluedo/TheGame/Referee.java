@@ -85,8 +85,10 @@ public class Referee {
             Players.add(new Player(i, playerName));
             server.send(i, "ack "+i);
         }
-        for(i=0; i<nbPlayers; i++) server.sendAll("addplayer "+Players.get(i).getName());
-        
+        for(i=0; i<nbPlayers; i++) {
+            server.sendAll("addplayer "+Players.get(i).getName());
+            Players.get(i).initCluesMap(Players);
+        }
     }
     
     public void playGame() throws IOException {
@@ -291,15 +293,16 @@ public class Referee {
                 }
             }
 
-            if(roomCards+suspectCards+weaponCards==3){
-                server.send(Turn, "error forbidden");
-                return TraiterCommande(); 
-            }
-            
             //On vérifie qu'il n'y a bien qu'UNE SEULE carte de chaque (Room, Weapon, Suspect)
             if(!(roomCards==1 && suspectCards==1 && weaponCards==1)){
-                server.send(Turn, "error invalid");
-                return TraiterCommande();
+                if(roomCards+suspectCards+weaponCards==3){
+                    server.send(Turn, "error forbidden");
+                    return TraiterCommande();
+                }
+                else {
+                    server.send(Turn, "error invalid");
+                    return TraiterCommande();
+                }
             }
         }
         return Ordre;
