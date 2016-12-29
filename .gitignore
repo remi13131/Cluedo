@@ -1,3 +1,4 @@
-/build/
-/nbproject/private/
+build/*
+nbproject/private/*
 nbproject/private/private.xml
+dist/*
